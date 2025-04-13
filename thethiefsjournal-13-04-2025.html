@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Thief's Journal</title>
+	
+   <style>
+    /* Base styles */
+    body {
+        font-family: Georgia, serif;
+        line-height: 	1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        transition: all 0.3s ease;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+	    h1, h2, h3, h4, h5, h6 {
+        text-align: center;
+        margin: 1.5em auto 0.8em;
+        font-weight: normal;
+        line-height: 1.3;
+        max-width: 800px;
+        padding: 0 20px;
+    }
+    
+    body.night-mode {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+    
+    /* Main container */
+    .editor-container {
+        padding: 40px 20px;
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+    
+    /* Header styles */
+    .journal-title {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 3.5rem;
+        margin: 0 auto 10px;
+        line-height: 1.2;
+        color: #000;
+        font-weight: normal;
+        border-bottom: 1px solid #888;
+        padding-bottom: 10px;
+        text-align: center;
+        max-width: 800px;
+    }
+    
+    .night-mode .journal-title {
+        color: #fff;
+        border-bottom-color: #666;
+    }
+    
+    .subtitle {
+        font-style: italic;
+        color: #555;
+        font-size: 1.2rem;
+        margin: 0 auto 30px;
+        text-align: center;
+        max-width: 600px;
+    }
+    
+    .night-mode .subtitle {
+        color: #aaa;
+    }
+    
+    /* Dropcap */
+    .dropcap {
+        float: left;
+        font-size: 60px;
+        line-height: 1;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    
+    /* Theme toggle button */
+    .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 24px;
+        padding: 10px;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0,0,0,0.05);
+        z-index: 100;
+        transition: all 0.5s ease;
+    }
+    
+    .night-mode .theme-toggle {
+        background-color: rgba(255,255,255,0.05);
+    }
+    
+    .theme-toggle:hover {
+        background-color: rgba(0,0,0,0.1);
+    }
+    
+    .night-mode .theme-toggle:hover {
+        background-color: rgba(255,255,255,0.1);
+    }
+    
+    .theme-icon {
+        transition: transform 0.5s ease, color 0.3s ease;
+    }
+    
+    .night-mode .theme-icon {
+        transform: rotate(180deg);
+        color: #fff;
+    }
+    
+    /* Calendar navigation */
+    .calendar-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0 auto 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        max-width: 800px;
+    }
+    
+    .night-mode .calendar-nav {
+        border-bottom-color: #444;
+    }
+    
+    .month-year {
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+    }
+    
+    .night-mode .month-year {
+        color: #fff;
+    }
+    
+    .nav-arrows {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .nav-btn {
+        background: none;
+        border: 1px solid #888;
+        border-radius: 4px;
+        padding: 5px 15px;
+        cursor: pointer;
+        font-family: Georgia, serif;
+        transition: all 0.3s ease;
+        color: #333;
+    }
+    
+    .night-mode .nav-btn {
+        border-color: #666;
+        color: #e0e0e0;
+    }
+    
+    .nav-btn:hover {
+        background-color: #eee;
+    }
+    
+    .night-mode .nav-btn:hover {
+        background-color: #333;
+    }
+    
+    /* Days grid */
+    .days-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Day card */
+    .day-card {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        min-height: 200px;
+        position: relative;
+    }
+    
+    .night-mode .day-card {
+        background-color: #1e1e1e;
+        border-color: #444;
+    }
+    
+    .day-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .night-mode .day-card:hover {
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+    
+    .day-card.selected {
+        border: 2px solid #333;
+        background-color: #f5f5f5;
+    }
+    
+    .night-mode .day-card.selected {
+        border-color: #ccc;
+        background-color: #2a2a2a;
+    }
+    
+    .day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .night-mode .day-header {
+        border-bottom-color: #444;
+    }
+    
+    .day-date {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #000;
+    }
+    
+    .night-mode .day-date {
+        color: #fff;
+    }
+    
+    .day-weekday {
+        font-style: italic;
+        color: #777;
+    }
+    
+    .night-mode .day-weekday {
+        color: #888;
+    }
+    
+    .day-content {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 15px;
+    }
+    
+    .night-mode .day-content {
+        color: #aaa;
+    }
+    
+    .day-articles {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.85rem;
+    }
+    
+    .day-articles li {
+        margin-bottom: 5px;
+        padding-left: 10px;
+        border-left: 2px solid #888;
+    }
+    
+    .preview-link {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9rem;
+        border-bottom: 1px dotted #888;
+        transition: all 0.3s ease;
+    }
+    
+    .night-mode .preview-link {
+        color: #ccc;
+    }
+    
+    .preview-link:hover {
+        color: #000;
+        border-bottom: 1px solid #333;
+    }
+    
+    .night-mode .preview-link:hover {
+        color: #fff;
+        border-bottom: 1px solid #ccc;
+    }
+    
+    .day-empty {
+        font-style: italic;
+        color: #999;
+    }
+    
+    .night-mode .day-empty {
+        color: #666;
+    }
+    
+    /* Article image */
+    .article-image {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px auto;
+        display: block;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .night-mode .article-image {
+        box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+    }
+    
+    .article-image:hover {
+        transform: scale(1.02);
+    }
+    
+    .image-caption {
+        text-align: center;
+        font-style: italic;
+        color: #666;
+        margin-top: 8px;
+        font-size: 0.9em;
+    }
+    
+    .night-mode .image-caption {
+        color: #aaa;
+    }
+    
+    /* Hide empty days */
+    .day-card.empty {
+        display: none;
+    }
+    
+    /* Loading screen */
+    #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        transition: opacity 1s ease;
+    }
+    
+    #yin-yang {
+        font-size: 80px;
+        cursor: pointer;
+        transition: all 1s ease;
+    }
+    
+    /* Main content */
+    #main-content {
+        opacity: 0;
+        transition: opacity 1s ease;
+        width: 100%;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .journal-title {
+            font-size: 2.5rem;
+        }
+        
+        .days-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .calendar-nav {
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-arrows {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .article-image {
+            max-width: 100%;
+        }
+        
+        .editor-container {
+            padding: 20px 15px;
+        }
+        
+        .journal-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+</head>
+	<link rel="icon" type="webp/img" href="https://media.decentralized-content.com/-/rs:fill:300:300/g:ce/f:webp/aHR0cHM6Ly9tYWdpYy5kZWNlbnRyYWxpemVkLWNvbnRlbnQuY29tL2lwZnMvYmFmeWJlaWRmMzIydnllYXFydHU0bmVwNDdyMjNqZmJtbXVueXN2dmg0YWNuaTVkbXN1dWFkdzViZnE">
+<body>
+    <!-- Tela de carregamento com ícone yin-yang -->
+    <div id="loading-screen">
+        <div id="yin-yang">☯</div>
+    </div>
+    
+    <!-- Conteúdo principal (inicialmente oculto) -->
+    <div id="main-content" style="display: none;">
+        <button class="theme-toggle" aria-label="Toggle night mode">
+            <span class="theme-icon">☯</span>
+        </button>
+
+        <div class="editor-container">
+            <h1 class="journal-title">The Thief's Journal</h1>
+			
+            <p class="subtitle">Nomad wandering thoughts and astrological interpretation almost daily by Dito Impolverato Severo Disciplinato.</p>
+            
+			
+			<main>
+	  
+	  
+	  
+    <article>
+      <h2>Serial Experiments</h2>
+      <p class="byline">By Dito Impolverato | Sunday 13, Abril - 2025</p>
+      <p><span class="dropcap">psychedelic</span> and philosophical anime directed by Ryūtarō Nakamura and written by Chiaki J. Konaka, is a visionary work that anticipated the collective trauma of the digital age. Its fragmented narrative and cyberpunk aesthetic explore themes such as identity, reality and the fusion between humans and technology – issues that today define our troubled relationship with the internet.</p>
+      	
+      <!-- Imagem com link -->
+      <div class="image-container">
+        <a href="https://objkt.com/tokens/KT1C9k3V43e2iQautShmWKAkVuoPXSNdi5YN/27/owners" target="_blank" rel="noopener noreferrer">
+          <img 
+            src="https://ipfs.io/ipfs/QmNtj5ndbgTb5XSv5dpNhHDBYsWoVi5FQ6YNrpJPgoFtbv" 
+            alt="Obra do artista elbi"
+            class="article-image"
+          >
+        </a>
+        <p class="image-caption">I don't need to stay, by elbi. 
+Why you should do that is something you should figure out for yourself.
+</p></div>
+		
+		
+	
+      <p>Lain Iwakura, the protagonist, lives in constant conflict between her physical "self" and her digital existence. The anime asks: *Where does the body end and the avatar begin?* Today, with social networks, deepfakes and artificial intelligence, this boundary dissolves. We live in a crisis of authenticity, where online profiles often replace real identities, generating anxiety and depersonalization – a collective trauma of post-truth.</p>
+		<p>In *Lain*, the *Wired* network stores all human memories and thoughts, creating a digital unconscious. This echoes our reality: the internet never forgets. Cancellations, data leaks and the immortalization of shameful moments generate a perpetual trauma, where the past always haunts. The prophecy that *"everything is connected"* has become a curse.</p>
+		<p>Lain is surrounded by people, but she is deeply lonely – a paradox that defines today's smartphone generation. The internet promised connection, but delivered liquid relationships (as Bauman would say). Social anxiety and *FOMO (Fear of Missing Out)* are symptoms of this digital void, where likes replace affection.</p>
+		<p>The anime explores the idea of the internet as a divine entity (the *"Network God"*), anticipating our submission to algorithms that control desires, opinions and even emotions. Social networks function as digital cathedrals, where data is sacrament and influencers are priests. The trauma here is the loss of agency – who really controls our minds?</p>
+		<p>In *Lain*, the boundary between the real and the virtual is blurred, leading to digital schizophrenia. Today, we live in information bubbles, where deepfakes and conspiracy theories challenge the notion of truth. The *"Internet Psychosis"* (as Konaka would call it) is a collective trauma: we no longer know what to believe.</p>
+		<p>*Serial Experiments Lain* was not only a work ahead of its time – it was a warning. Her themes are now diagnostic of digital malaise: **dissociation, surveillance, algorithmic solitude, and the death of the private**. As we navigate a world where the *online* and the *offline* merge, Lain stands as a cyberpunk oracle, whispering:
+*"Don't you feel it? Don't you see it? The network is already part of you."*</p>
+
+    </article>
+
+	
+	  <h3>☯︎</h3>
+				
+	    <article>
+      <h2>Radicals Of language</h2>
+      <p class="byline">By Dito Impolverato | Sunday 13, Abril - 2025</p>
+      <p><span class="dropcap">notion </span> of a single, universal principle is a Western construct, deeply tied to colonial tendencies that seek to centralize meaning and control thought. By dissecting the radicals of language—the irreducible units of words—we uncover how linguistic structures shape perception from the very beginning. This linear progression toward a singular "future" reinforces a rigid temporality, but decentralized epistemologies, like those in cryptoart, disrupt this flow. Here, meaning fractures and multiplies, resisting the hegemony of a monolithic narrative.</p>
+      	
+      <!-- Imagem com link -->
+      <div class="image-container">
+        <a href="https://objkt.com/tokens/hicetnunc/26676" target="_blank" rel="noopener noreferrer">
+          <img 
+            src="https://ipfs.io/ipfs/QmdH3meLV2MSNuv8uNXUQsfLTmofqKX17qjrjsE4VAx5WV" 
+            alt="Obra do artista bjorn"
+            class="article-image"
+          >
+        </a>
+        <p class="image-caption">NEON PUNK ADAM, A @bjorncalleja and @luciusfelimus hybrid / Oil on Paper / Photograph (Ortigas Panorama Day e Night) / 2021
+
+</p></div>
+		
+		
+	
+      <p>In the communal epistemology of cryptoart, language is liberated from its hierarchical constraints, allowing for a polyphony of voices and interpretations. By decentralizing the radicals of words, we dismantle the tools of subjugation embedded in linguistic domination. This process mirrors the post-media potentiality Felix Guattari envisioned—a space where creativity escapes institutional capture. A Love of UIQ, Guattari’s unfinished project, gestures toward this fluidity, where networks of resistance emerge through collective reimagining.</p>
+		<p>The post-media condition thrives on instability, rejecting fixed meanings in favor of continuous becoming. Cryptoart, as a practice, embodies this by redistributing authorship and challenging traditional notions of ownership. Guattari’s schizoanalytic approach aligns with this, advocating for a subjectivity that is always in flux. In UIQ, the blurring of identities and technologies suggests a world where resistance is not opposition but recombination—a weaving of new codes from the debris of old systems.</p>
+		<p>To untangle language and rethink philosophy, we must embrace the messiness of decentralized expression. The radicals of words, once dispersed, reveal the latent possibilities within communication itself. Cryptoart and Guattari’s work both point toward a future where networks—whether of data or desire—operate beyond subjugation. Here, the love of UIQ becomes a metaphor for connection without control, a post-media praxis where resistance is as fluid as the language we reshape.</p>
+		
+		
+
+    </article>
+
+	
+	  <h3>☯︎</h3>
+					
+		    <article>
+      <h2>Hypnocracy of Andrea Aolamedici</h2>
+      <p class="byline">By Dito Impolverato | Sunday 13, Abril - 2025</p>
+      <p><span class="dropcap">Hypnocracy</span> was developed by Italian philosopher Andrea Colamedici under the pseudonym Jianwei Xun, blending Eastern and Western philosophical perspectives on power and consciousness. The name "Jianwei Xun" evokes an Asian intellectual influence, but it is actually one of Colamedici’s alter egos, used to explore ideas about societal control, collective hypnosis, and the illusion of freedom in modern governance. By adopting this pseudonym, Colamedici creates a symbolic bridge between different cultural approaches to power, suggesting that the mechanisms of control he describes are universal.</p>
+      	
+      <!-- Imagem com link -->
+      <div class="image-container">
+        <a href="https://objkt.com/tokens/KT1WKrqCdpj2cR3tQQmLpDvT4RLLohM7JKMD/35" target="_blank" rel="noopener noreferrer">
+          <img 
+            src="https://ipfs.io/ipfs/QmT7YPGpzUwkizmLz3d46eFvCFQTQyfMPRtmNyEYjh7eDS" 
+            alt="Obra do artista anon"
+            class="article-image"
+          >
+        </a>
+        <p class="image-caption">Go outside, leave the screen. HYPNO 
+</p></div>
+		
+		
+	
+      <p>THypnocracy refers to a system where rulers maintain power not through brute force, but by keeping the masses in a state of psychological trance. Through media, technology, and carefully crafted narratives, people are led to believe they are free while unconsciously conforming to imposed structures. Colamedici (as Xun) argues that this form of governance is more insidious than traditional authoritarianism because resistance is muted—people don’t realize they are being controlled. The term merges "hypnosis" with "-cracy" (rule), framing modern democracy as a paradox of participation without true awareness.</p>
+		<p>Andrea Colamedici’s use of the Jianwei Xun persona allows him to dissect power dynamics from a detached, almost mythological perspective. This artistic choice reflects the core idea of Hypnocracy: identity itself can be a manipulated construct. By presenting these theories under a different name, he demonstrates how authority shapes perception—even the authorship of ideas can influence their reception. The pseudonym also reinforces the theme of illusion, making readers question whether any narrative, even philosophical discourse, is free from hidden control.</p>
+		<p>Ultimately, Hypnocracy serves as a warning about the subtle ways power operates in the digital age. Colamedici, through his dual identity, challenges us to awaken from collective trances—whether political, cultural, or technological. The Jianwei Xun pseudonym is not just a stylistic device but a metaphor: in a world where reality is mediated, even the thinkers we trust might be part of the hypnosis. Breaking free requires recognizing the mechanisms of manipulation, a task that begins with questioning every layer of influence, including the voices that critique the system itself.</p>
+		<p>But what if even "Andrea Colamedici" is itself a pseudonym—a carefully crafted identity designed to make us trust the messenger? Do you, the reader, know how to wield a pseudonym, to fragment your own voice and let ideas circulate untethered from a single ego? Consider this: "Dito Empolverato," another name that appears in these discussions, is also a mask—a collaborative persona, perhaps even a co-creation between human and machine, much like Jianwei Xun. If authorship can be distributed, if thought can be crowdsourced or algorithmically shaped, then who, or what, is really speaking? The deeper question isn’t just about who controls the narrative, but whether the concept of an "author" still holds meaning—or if, in the age of Hypnocracy, we are all just ghostwriters for systems larger than ourselves.</p>
+			
+
+    </article>
+
+	
+	  <h3>☯︎</h3>
+					
+		    <article>
+      <h2>Reading for philosophy</h2>
+      <p class="byline">By Dito Impolverato | Sunday 13, Abril - 2025</p>
+      <p><span class="dropcap">Self-taught </span>  reading, geophilosophy, and minor bibliotherapy suggest that knowledge can be mapped like a territory, where the reader becomes both cartographer and wanderer. In this context, reading functions as a dynamic tool for navigating the self-taught cybernetics of thought—a system where ideas self-regulate and evolve outside formal structures. Unlike academia, which follows rigid methodologies, the autonomous learner moves through texts with liquid flexibility, drawing connections between philosophy, technology, and shamanic practices. Here, the book is not just a source of information but a node in a wider network of meaning, where each reading act recalibrates the mind’s circuitry.</p>
+      	
+      <!-- Imagem com link -->
+      <div class="image-container">
+        <a href="https://teia.art/objkt/27668" target="_blank" rel="noopener noreferrer">
+          <img 
+            src="https://ipfs.io/ipfs/QmSwWBcnHMcC7pyQg5oWj7Po7wAxB8MbLcYmdRccRska9r" 
+            alt="Obra do artista ninoarteiro"
+            class="article-image"
+          >
+        </a>
+        <p class="image-caption">adam
+180f 600px */ @p1xelfool
+</p></div>
+		
+		
+	
+      <p>Geophilosophy frames this process as a deterritorialization of knowledge, where thinking escapes institutional confines and spreads rhizomatically. The self-learner, like a cybernetic nomad, adapts and reassembles concepts from diverse fields—Deleuzian philosophy, digital culture, esotericism—without the pressure of academic validation. Yet, this freedom carries risks: without critical engagement or peer validation, thought can spiral into solipsism or incoherence. The challenge is to balance fluid exploration with moments of grounding, ensuring that the intellectual journey remains both expansive and anchored</p>
+		
+		
+					<p>Minor bibliotherapy—the healing power of books—plays a key role in this cybernetic autodidactism, as texts become mirrors and medicine for the psyche. Reading transforms into a ritual, where the act of decoding symbols aligns with the cybershaman’s quest to interface with deeper layers of reality. However, this path demands a community, even if decentralized—a network of "validating peers" who challenge, reflect, and co-create meaning. Alone, the self-taught thinker risks becoming lost in their own labyrinth; with others, the map of knowledge gains clarity and depth.</p>
+		<p>The fusion of self-directed learning and cybershamanism suggests a new epistemology: one where the digital and the mystical converge in the act of reading. Here, the book is a portal, and the reader—a cybernetic traveler—navigates between worlds, assembling their own canon. Yet, philosophy and shamanism have always thrived in dialogue, not isolation. Thus, the ideal lies in a hybrid space: neither rigidly academic nor chaotically solitary, but a flowing, interconnected web where autonomy and communion coexist. The result is a living cartography, constantly redrawn by the collective intelligence of seekers.</p>
+	
+		
+
+    </article>
+
+	
+	  <h3>☯︎</h3>
+				
+							
+		    <article>
+      <h2>Map of cybernetics</h2>
+      <p class="byline">By Dito Impolverato | Sunday 13, Abril - 2025</p>
+      <p><span class="dropcap">Art </span> of navigation has always relied on precise tools and knowledge to guide travelers across unknown territories. In ancient times, sailors depended on maps, charts, astrology, and geography to traverse vast oceans. These elements were essential for determining position, plotting courses, and avoiding dangers. Similarly, modern cybernetics—the study of control and communication in machines and living organisms—also depends on structured systems to navigate complex environments, whether in robotics, AI, or network design.</p>
+      	
+      <!-- Imagem com link -->
+      <div class="image-container">
+        <a href="https://teia.art/objkt/27625" target="_blank" rel="noopener noreferrer">
+          <img 
+            src="https://ipfs.io/ipfs/QmWScY7B2JEouLbbcAef4wBctikS4TMUcv4eKShgGnqeaN" 
+            alt="Obra do artista ninoarteiro"
+            class="article-image"
+          >
+        </a>
+        <p class="image-caption">Hicetnunc Glyph Board
+Artist: Griz Goddard / @grizgb
+</p></div>
+		
+		
+	
+      <p>Maps and nautical charts have been the backbone of navigation for centuries, providing a visual representation of the world. Just as sailors used these tools to interpret coastlines and currents, cybernetics employs digital "maps" in the form of algorithms and data models to guide autonomous systems. Without accurate maps, both physical and digital navigation would be prone to errors, leading to disorientation or system failures. The parallels between traditional cartography and modern data mapping highlight the timeless need for reliable reference points.</p>
+		
+					<p>Before modern technology, astrological knowledge—such as the positions of stars and planets—was crucial for celestial navigation. Sailors used instruments like astrolabes and sextants to align themselves with the heavens. In cybernetics, "celestial" reference points can be seen in the form of encoded signals, GPS satellites, or even machine-learning benchmarks that guide autonomous decision-making. Both fields demonstrate how abstract knowledge must be translated into practical guidance.</p>
+		<p>Geography shapes navigation by defining physical obstacles and pathways, just as information architecture shapes digital systems. Understanding terrain—whether land, sea, or data—is essential for efficient movement. Cybernetics extends this concept by analyzing the "geography" of networks, optimizing pathways for information flow. Thus, whether navigating the high seas or the digital realm, mastery over spatial and informational structures remains fundamental to success.</p>
+	
+		
+
+    </article>
+
+	
+	  <h3>☯︎</h3>	
+	
+		
+	 
+		 <p class="subtitle">Persist forever</p>
+		<p class="subtitle">This is a nomad journal but your donation can help maintain and evolve the project via zora.co/@wisdoom </p>
+  </main>
+            
+            <div class="calendar-nav">
+                <div class="month-year" id="current-month">Abril 2025</div>
+                <div class="nav-arrows">
+                    <button class="nav-btn" id="prev-month">← </button>
+                    <button class="nav-btn" id="next-month"> →</button>
+                </div>
+            </div>
+            
+            <div class="days-grid" id="calendar-days">
+                <!-- Os dias serão gerados pelo JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Aguarda o DOM estar completamente carregado
+        document.addEventListener('DOMContentLoaded', function() {
+            // 2. Configuração inicial
+            const yinYang = document.getElementById('yin-yang');
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            // 3. Dados do calendário
+            const posts = [
+                {
+                    date: '2025-04-03',
+                    title: "Thursday, April 03, 2025",
+                    subtitle: "Reflexs of reactions, Abstract mathematics and mysticism, Decentralization and the Future of Publishing, The Thief's Journal",
+                    link: "https://bafybeidlatzzkclvw4xl6ogw3cfj5hgcgoz5buzworvuv3egccho2zlvki.ipfs.dweb.link/"
+                },
+                {
+                    date: '2025-04-04',
+                    title: "Friday, April 04, 2025",
+                    subtitle: "Abstraction of primary interest, Uranium needs water, Ethereal Speed, Staking Tezos, Staking Ethereum, Nodes and Mining btc",
+                    link: "https://magic.decentralized-content.com/ipfs/bafybeifpvrlnqgtiowqrreeeh7il7xvvakkgmmbisettvkgai3qqccwqfq"
+                },
+                {
+                    date: '2025-04-05',
+                    title: "Saturday, April 05, 2025",
+                    subtitle: "Hyierachy of Art groups, Speeding up the doomsday clock, Systematic Fail, Trump and Bukele 'busines'",
+                    link: "https://magic.decentralized-content.com/ipfs/bafybeibct2vcx3rt7b4tdq5cyv3qod2qgrvytxfkbjdjkikzffy5qwivua"
+                },
+				{
+                    date: '2025-04-06',
+                    title: "Sunday, April 06, 2025",
+                    subtitle: "Written in stone, When agents enter the chat, Trump network, U$420.000.000, New World",
+                    link: "https://magic.decentralized-content.com/ipfs/bafybeiffg5fbebqbpbfxib224gtetfftynez7y3a7iigjvrqmkhgidjfi4"
+					},
+				{
+                    date: '2025-04-07',
+                    title: "Monday, April 07, 2025",
+                    subtitle: "Analyzing spx6900, It will be worse, Ontological cycles, Endless Violence",
+                    link: "https://magic.decentralized-content.com/ipfs/bafybeies3s36xkxeqgvgdf2fdocs3cehygdbifdzdbfwulthckhwrijirq"
+					},
+				{
+                    date: '2025-04-08',
+                    title: "Wednesday, April 08, 2025",
+                    subtitle: "Bitcoin's Paradox, Apples on etherlink, Memecoins and the rise of utillity, Amid Chaos, Art Shines on Tezos, The Morality of Those Who Own Morality",
+                    link: "https://magic.decentralized-content.com/ipfs/bafybeidjwfzs572czdrdmqaaft6iyvwjuoblqsplguf6aayqct27egdx7i"
+				},
+				   {
+                    date: '2025-04-09',
+                    title: "Thursday, April 09, 2025",
+                    subtitle: "Morgiana, Slowdown or burnout, Corruption manipulation, Who?, The Wolf",
+                    link: "https://magic.decentralized-content.com/ipfs/bafybeidc4v4hhdvjzsftluneeus3en6577yvmo22yj3tegshphlesuoulm"
+				   },
+				{
+                    date: '2025-04-10',
+                    title: "Wednesday, April 09, 2025",
+                    subtitle: "Trade War, Sustains of web3 art, Colonial Dogs, Impermanent Loss, State of AI",
+                    link: "https://bafybeia4nucgcv2dw2zeanbqpmnd5qkmfhayj6bu6vuswbnwbqnrates7i.ipfs.dweb.link/"
+				},
+				{
+                    date: '2025-04-11',
+                    title: "Friday, April 11, 2025",
+                    subtitle: "Art as a source of law, Information on demand, 2 thiefs, Massacre for memory",
+                    link: "https://magic.decentralized-content.com/ipfs/bafybeigt37km7rhc7zpaj4rrbzvtuwaw33oz4olcybtux7iprevroozasm"
+				} 
+            ];
+
+            const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            let currentDate = new Date(2025, 3, 1); // Abril 2025
+
+            // 4. Função para renderizar o calendário (modificada para ordem decrescente)
+            function renderCalendar() {
+                const monthYearElement = document.getElementById('current-month');
+                const calendarDays = document.getElementById('calendar-days');
+                
+                monthYearElement.textContent = `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+                calendarDays.innerHTML = '';
+                
+                const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+                
+                // Criar array de dias do mês
+                const daysInMonth = [];
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                    daysInMonth.push(day);
+                }
+                
+                // Ordenar em ordem decrescente
+                daysInMonth.sort((a, b) => b - a);
+                
+                // Processar dias em ordem decrescente
+                for (const day of daysInMonth) {
+                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const post = posts.find(p => p.date === dateKey);
+                    
+                    // Se não houver post para este dia, pule para o próximo
+                    if (!post) continue;
+                    
+                    const dayCard = document.createElement('div');
+                    dayCard.className = 'day-card';
+                    
+                    const articles = post.subtitle.split(', ');
+                    
+                    dayCard.innerHTML = `
+                        <div class="day-header">
+                            <span class="day-date">${day} ${months[currentDate.getMonth()].substring(0, 3)}</span>
+                            <span class="day-weekday">${weekdays[date.getDay()]}</span>
+                        </div>
+                        <div class="day-content">
+                            <p>${post.title}</p>
+                            <ul class="day-articles">
+                                ${articles.map(item => `<li>${item.trim()}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <a href="${post.link}" class="preview-link" target="_blank">See</a>
+                    `;
+                    
+                    dayCard.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('preview-link')) {
+                            dayCard.classList.toggle('selected');
+                        }
+                    });
+                    
+                    calendarDays.appendChild(dayCard);
+                }
+
+                // Se não houver nenhum card visível, mostre uma mensagem
+                if (calendarDays.children.length === 0) {
+                    const noPostsMessage = document.createElement('div');
+                    noPostsMessage.className = 'day-card';
+                    noPostsMessage.innerHTML = `
+                        <div class="day-content">
+                            <p class="day-empty">Nenhuma publicação neste mês</p>
+                        </div>
+                    `;
+                    calendarDays.appendChild(noPostsMessage);
+                }
+            }
+
+            // 5. Configuração do modo noturno
+            function setupNightMode() {
+                const themeToggle = document.querySelector('.theme-toggle');
+                const themeIcon = document.querySelector('.theme-icon');
+                const body = document.body;
+                
+                if (localStorage.getItem('nightMode') === 'enabled') {
+                    body.classList.add('night-mode');
+                    themeIcon.style.transform = 'rotate(180deg)';
+                    themeIcon.style.color = '#fff';
+                }
+                
+                themeToggle.addEventListener('click', () => {
+                    const isNightMode = !body.classList.contains('night-mode');
+                    body.classList.toggle('night-mode');
+                    
+                    if (isNightMode) {
+                        themeIcon.style.transform = 'rotate(180deg)';
+                        themeIcon.style.color = '#fff';
+                    } else {
+                        themeIcon.style.transform = 'rotate(0deg)';
+                        themeIcon.style.color = '';
+                    }
+                    
+                    localStorage.setItem('nightMode', isNightMode ? 'enabled' : 'disabled');
+                });
+            }
+
+            // 6. Configuração da navegação do calendário
+            function setupCalendarNavigation() {
+                document.getElementById('prev-month').addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendar();
+                });
+                
+                document.getElementById('next-month').addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendar();
+                });
+            }
+
+            // 7. Animação de transição
+            yinYang.addEventListener('click', function() {
+                // Animação do yin-yang
+                yinYang.style.transform = 'rotate(720deg) scale(0)';
+                yinYang.style.opacity = '0';
+                
+                // Esconde a tela de carregamento e mostra o conteúdo principal
+                setTimeout(() => {
+                    loadingScreen.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        mainContent.style.display = 'block';
+                        
+                        // Inicializa tudo
+                        renderCalendar();
+                        setupNightMode();
+                        setupCalendarNavigation();
+                        
+                        // Anima a opacidade do conteúdo principal
+                        setTimeout(() => {
+                            mainContent.style.opacity = '1';
+                        }, 10);
+                    }, 1000);
+                }, 1000);
+            });
+            
+            // 8. Dispara automaticamente o clique após 1 segundo (opcional)
+            setTimeout(() => yinYang.click(), 1000);
+        });
+    </script>
+</body>
+</html>
